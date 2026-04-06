@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import gzip
+import html as html_lib
 import logging
 import os
 import re
@@ -55,6 +56,7 @@ EMAIL_TO = [value.strip() for value in os.getenv("EMAIL_TO", "").split(",") if v
 RESEND_KEY = os.getenv("RESEND_API_KEY", "").strip()
 FROM_EMAIL = os.getenv("FROM_EMAIL", "").strip()
 RESEND_AUDIENCE_ID = os.getenv("RESEND_AUDIENCE_ID", "").strip()
+UNSUBSCRIBE_BASE_URL = os.getenv("UNSUBSCRIBE_BASE_URL", "").strip()
 
 BUG_BOUNTY_TARGET = 5
 NEWS_TARGET = 3
@@ -287,6 +289,11 @@ def resend_headers() -> dict[str, str]:
 
 def chunked(values: list[str], size: int) -> list[list[str]]:
     return [values[index : index + size] for index in range(0, len(values), size)]
+
+
+def build_unsubscribe_url(email_address: str) -> str:
+    base_url = (UNSUBSCRIBE_BASE_URL or "https://sc-newspaper-subscribe.cyberpunk060594.workers.dev").rstrip("/")
+    return f"{base_url}/unsubscribe?email={quote_plus(email_address)}"
 
 
 # =============================================================================
@@ -891,6 +898,10 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
       <p style="margin:0;font-size:11px;color:#94a3b8;">
         Sources include public disclosures, cybersecurity RSS feeds, CERT-In, Project Zero, and NVD.
       </p>
+      <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;">
+        You are receiving this because you subscribed to SC Newspaper.
+        <a href="__UNSUBSCRIBE_URL__" style="color:#cbd5e1;">Unsubscribe instantly</a>.
+      </p>
     </div>
   </div>
 </body>
@@ -903,36 +914,49 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
 # SEND
 # =============================================================================
 def send_email(html: str, subject: str, recipients: list[str]) -> bool:
-    batches = chunked(recipients, RESEND_RECIPIENT_BATCH_SIZE)
-    log.info("Sending via Resend — %d recipient(s) across %d batch(es)", len(recipients), len(batches))
+    unique_recipients = list(dict.fromkeys(recipients))
+    log.info("Sending via Resend — %d recipient(s)", len(unique_recipients))
 
-    for index, batch in enumerate(batches, start=1):
+    sent = 0
+    failed: list[str] = []
+
+    for index, recipient in enumerate(unique_recipients, start=1):
+        personalized_html = html.replace(
+            "__UNSUBSCRIBE_URL__", html_lib.escape(build_unsubscribe_url(recipient), quote=True)
+        )
+
         try:
             response = requests.post(
                 f"{RESEND_API_BASE}/emails",
                 headers=resend_headers(),
                 json={
                     "from": FROM_EMAIL,
-                    "to": batch,
+                    "to": [recipient],
                     "subject": subject,
-                    "html": html,
+                    "html": personalized_html,
                 },
                 timeout=SEND_TIMEOUT,
             )
         except Exception as exc:
-            log.error("Send exception on batch %d: %s", index, exc)
-            return False
+            log.error("Send exception for %s: %s", recipient, exc)
+            failed.append(recipient)
+            continue
 
         if response.status_code not in (200, 201):
-            log.error("Resend batch %d failed (%s): %s", index, response.status_code, response.text)
-            return False
+            log.error("Resend failed for %s (%s): %s", recipient, response.status_code, response.text)
+            failed.append(recipient)
+            continue
 
-        log.info("Batch %d/%d sent. Resend ID: %s", index, len(batches), response.json().get("id", "?"))
+        sent += 1
+        log.info("Sent %d/%d to %s. Resend ID: %s", index, len(unique_recipients), recipient, response.json().get("id", "?"))
 
-        if index < len(batches):
+        if index < len(unique_recipients):
             time.sleep(BATCH_DELAY_SECONDS)
 
-    return True
+    if failed:
+        log.warning("Failed recipients: %s", ", ".join(failed))
+
+    return sent > 0
 
 
 # =============================================================================
