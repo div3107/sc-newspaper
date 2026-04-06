@@ -1,6 +1,6 @@
 # 🛡️ SC Newspaper
 
-**India's Daily Cybersecurity Newspaper — Automated. Open Source. Free.**
+**Daily Cybersecurity Newspaper — Automated. Open Source. Free.**
 
 A community project by [Security Circuit](https://securitycircuit.in).
 
@@ -8,119 +8,90 @@ A community project by [Security Circuit](https://securitycircuit.in).
 
 ## What it does
 
-Every morning at **10 AM IST**, SC Newspaper automatically sends a curated cybersecurity digest to subscribers containing:
+SC Newspaper sends a daily cybersecurity digest to subscribers with a minimal structure:
 
 | Section | Source |
 |---|---|
-| 🚨 CERT-In Advisories | cert-in.org.in (direct probe) |
-| 🐛 Bug Bounty Disclosures | HackerOne Hacktivity, Bugcrowd, Project Zero |
-| 🔥 Top 5 Threats | The Hacker News, BleepingComputer, Google News |
-| 🧠 Daily Learning Nugget | OWASP Web/API/Mobile, MITRE ATT&CK, Kill Chain, NIST, ISO 27001 |
-| ⚠️ Audit Red Flag | 15 rotating findings from real-world audits |
+| 🐛 Bug Bounty Reports & Public Disclosures | HackerOne, Bugcrowd, huntr, Google Project Zero, NVD |
+| 🔥 Cybersecurity News | The Hacker News, BleepingComputer, Google News |
+| 🚨 CERT-In Alerts | cert-in.org.in (direct advisory probe) |
 
-**100% free. No paid APIs. Runs on GitHub Actions.**
+The subscription flow is handled by a **Cloudflare Worker**, subscribers are stored in **Resend**, and the daily digest is sent by **GitHub Actions**.
+
+**100% free stack. No paid infrastructure required.**
+
+---
+
+## Live Setup
+
+- Frontend: `news.securitycircuit.in`
+- Subscription API: Cloudflare Worker (`workers.dev` or custom subdomain)
+- Daily sender: GitHub Actions
+- Email platform: Resend
 
 ---
 
 ## Subscribe
 
-👉 [newspaper.securitycircuit.in](https://newspaper.securitycircuit.in)
+Host the landing page from `web/index.html`.
+
+If you use a custom domain, update this section to your real URL, for example:
+
+👉 [https://news.securitycircuit.in](https://news.securitycircuit.in)
 
 ---
 
-## Self-host in 5 minutes
+## How it works
 
-### 1. Fork this repo
-
-### 2. Add GitHub Secrets
-
-Go to **Settings → Secrets → Actions** and add:
-
-| Secret | Value |
-|---|---|
-| `RESEND_API_KEY` | Your key from resend.com |
-| `FROM_EMAIL` | `info@yourdomain.com` (verified in Resend) |
-| `EMAIL_TO` | Comma-separated recipient list |
-
-### 3. That's it
-
-The workflow runs daily at 10 AM IST via `.github/workflows/digest.yml`.
-Manual trigger: **Actions → Daily Cyber Digest → Run workflow**
+1. A user enters an email on the website.
+2. `web/worker.js` sends that email to Resend Contacts and adds it to your subscriber segment.
+3. The Worker sends a welcome email.
+4. GitHub Actions runs `digest.py` on schedule.
+5. `digest.py` fetches all active subscribers from Resend and sends the daily digest.
+6. Every email contains a real unsubscribe link handled by the Worker.
 
 ---
 
-## Project Structure
+## Required Resend setup
 
-```
-sc-newspaper/
-├── digest.py              # Main script
-├── requirements.txt       # Python dependencies
-├── .env.example           # Local development config
-├── .gitignore
-├── .github/
-│   └── workflows/
-│       └── digest.yml     # GitHub Actions schedule
-├── web/
-│   ├── index.html         # Subscription landing page
-│   ├── worker.js          # Cloudflare Worker (subscription backend)
-│   └── wrangler.toml      # Worker deployment config
-└── README.md
-```
+Before deploying, create these in Resend:
 
----
+### 1. API key
+Create an API key with permissions for:
+- sending emails
+- contacts
+- segments / audience management
 
-## Deploy the subscription page
+### 2. Verified sending domain
+Verify your domain in Resend, for example:
 
-The landing page (`web/index.html`) is a static file — host it anywhere:
+- `news@securitycircuit.in`
+- `info@securitycircuit.in`
 
-- **GitHub Pages** — free, zero config
-- **Cloudflare Pages** — free, automatic deploys from this repo
-- **Your existing site** — embed as a section
+### 3. Subscriber segment
+Create a segment, for example:
 
-The subscription backend (`web/worker.js`) runs as a **Cloudflare Worker** (free tier: 100k requests/day):
+- `SC Newspaper Subscribers`
 
-```bash
-npm install -g wrangler
-wrangler secret put RESEND_API_KEY
-wrangler secret put RESEND_AUDIENCE_ID
-wrangler secret put FROM_EMAIL
-wrangler deploy
-```
+Copy its ID. This is used as:
 
-Then update the fetch URL in `index.html` to your worker URL.
+- `RESEND_AUDIENCE_ID`
+
+Note: the code still uses the name `RESEND_AUDIENCE_ID`, but it should contain your **Resend segment ID**.
 
 ---
 
-## Tech Stack
+## GitHub deployment
 
-- **Python 3.11** — digest script
-- **GitHub Actions** — free daily scheduler
-- **Resend** — email delivery (free: 100 emails/day, 3000/month)
-- **Cloudflare Workers** — subscription API (free)
-- **Cloudflare Pages** — landing page hosting (free)
+Upload this project as its own GitHub repository, with these files at the repo root:
 
----
-
-## Roadmap
-
-- [ ] Bug bounty RSS integration (HackerOne, Bugcrowd)
-- [ ] Weekly digest option
-- [ ] Telegram channel support
-- [ ] Web archive of past editions
-- [ ] Subscriber count badge
-
----
-
-## Contributing
-
-PRs welcome. Ideas for new nuggets, red flags, or feed sources — open an issue.
-
----
-
-## License
-
-MIT — free to use, modify, and distribute.
-
----
-
-**Built with ❤️ by [Security Circuit](https://securitycircuit.in) — India's Cybersecurity Community**
+```text
+digest.py
+requirements.txt
+.env.example
+.gitignore
+README.md
+.github/workflows/digest.yml
+web/index.html
+web/worker.js
+web/wrangler.toml
