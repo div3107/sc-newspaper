@@ -32,6 +32,7 @@ jobs:
           echo "FROM_EMAIL present: ${{ secrets.FROM_EMAIL != '' }}"
           echo "EMAIL_TO present: ${{ secrets.EMAIL_TO != '' }}"
           echo "RESEND_AUDIENCE_ID present: ${{ secrets.RESEND_AUDIENCE_ID != '' }}"
+          echo "UNSUBSCRIBE_BASE_URL present: ${{ vars.UNSUBSCRIBE_BASE_URL != '' }}"
 
       - name: Run digest
         run: python digest.py
@@ -40,6 +41,7 @@ jobs:
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
+          UNSUBSCRIBE_BASE_URL: ${{ vars.UNSUBSCRIBE_BASE_URL }}
 
       - name: Save cache
         if: always()
