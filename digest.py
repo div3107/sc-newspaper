@@ -64,6 +64,8 @@ CERTIN_TARGET = 3
 CACHE_EXPIRE_DAYS = 30
 RESEND_RECIPIENT_BATCH_SIZE = 50
 BATCH_DELAY_SECONDS = 0.6
+MEDIUM_RECENT_DAYS = 45
+NVD_RECENT_DAYS = 14
 
 CERTIN_BASE = "https://www.cert-in.org.in"
 PROJECT_ZERO_URL = "https://projectzero.google/"
@@ -122,21 +124,90 @@ BUG_BOUNTY_FEEDS = [
         "url": "https://news.google.com/rss/search?q="
         + quote_plus("site:hackerone.com/reports vulnerability OR exploit")
         + "&hl=en-IN&gl=IN&ceid=IN:en",
-        "limit": 3,
-    },
-    {
-        "name": "Bugcrowd Disclosure",
-        "url": "https://news.google.com/rss/search?q="
-        + quote_plus('site:bugcrowd.com disclosed vulnerability OR crowdstream')
-        + "&hl=en-IN&gl=IN&ceid=IN:en",
-        "limit": 3,
+        "limit": 2,
     },
     {
         "name": "huntr",
         "url": "https://news.google.com/rss/search?q="
         + quote_plus("site:huntr.com CVE OR vulnerability OR disclosure")
         + "&hl=en-IN&gl=IN&ceid=IN:en",
-        "limit": 3,
+        "limit": 2,
+    },
+]
+
+MEDIUM_BOUNTY_FEEDS = [
+    {"name": "@dhxrxx", "url": "https://medium.com/feed/@dhxrxx", "limit": 1},
+    {"name": "sudoaman", "url": "https://sudoaman.medium.com/feed", "limit": 1},
+    {"name": "@uday637", "url": "https://medium.com/feed/@uday637", "limit": 1},
+    {"name": "@bugitrix", "url": "https://medium.com/feed/@bugitrix", "limit": 1},
+    {"name": "@0xuserm9", "url": "https://medium.com/feed/@0xuserm9", "limit": 1},
+    {"name": "@sonuoffsec", "url": "https://medium.com/feed/@sonuoffsec", "limit": 1},
+    {"name": "varnith", "url": "https://varnith.medium.com/feed", "limit": 1},
+    {"name": "v3n0m", "url": "https://v3n0m.medium.com/feed", "limit": 1},
+    {"name": "@HackerMD", "url": "https://medium.com/feed/@HackerMD", "limit": 1},
+    {"name": "@contact.us1320", "url": "https://medium.com/feed/@contact.us1320", "limit": 1},
+]
+
+CURATED_MEDIUM_ARTICLES = [
+    {
+        "title": "CVE-2026-22812: How I Got RCE on a 71k-Star AI Coding Tool With Zero Authentication",
+        "link": "https://medium.com/@dhxrxx/cve-2026-22812-how-i-got-rce-on-a-71k-star-ai-coding-tool-with-zero-authentication-7524fbc3317f",
+        "summary": "Medium write-up on unauthenticated RCE in a popular AI coding tool.",
+        "source_detail": "@dhxrxx",
+    },
+    {
+        "title": "The $0 Supply Chain Hack: Hijacking Microsoft's Setup.exe (And Broke Their Bounty Policy)",
+        "link": "https://sudoaman.medium.com/the-0-supply-chain-hack-hijacking-microsofts-setup-exe-and-broke-their-bounty-policy-f05eb6fedcff",
+        "summary": "Supply-chain write-up on hijacking Microsoft's Setup.exe and the related bounty-policy issue.",
+        "source_detail": "sudoaman",
+    },
+    {
+        "title": "Why You're Not Finding Bugs (And How to Find Your First P1 Bug)",
+        "link": "https://medium.com/@uday637/why-youre-not-finding-bugs-and-how-hackers-actually-do-with-idor-8b456bacfaf6",
+        "summary": "Practical primer on finding first serious bug bounty wins with IDOR methodology.",
+        "source_detail": "@uday637",
+    },
+    {
+        "title": "Google Dorking: The Most Underrated Bug Bounty Skill",
+        "link": "https://medium.com/@bugitrix/google-dorking-the-most-underrated-bug-bounty-skill-bd548cac235c",
+        "summary": "Guide to using Google dorks as a bug bounty reconnaissance skill.",
+        "source_detail": "@bugitrix",
+    },
+    {
+        "title": "The Hidden Weapon: How I Turn Mass Assignment into Bounties",
+        "link": "https://medium.com/@0xuserm9/the-hidden-weapon-how-i-turn-mass-assignment-into-bounties-459d7c35a727",
+        "summary": "Mass-assignment methodology write-up focused on turning insecure defaults into bounty findings.",
+        "source_detail": "@0xuserm9",
+    },
+    {
+        "title": "How I Find the Real IP Behind Cloudflare (When It's Not Supposed to Be Visible)",
+        "link": "https://medium.com/@sonuoffsec/how-i-find-the-real-ip-behind-cloudflare-when-its-not-supposed-to-be-visible-cd48e2ce5e62",
+        "summary": "Technique breakdown for identifying origin IPs that sit behind Cloudflare.",
+        "source_detail": "@sonuoffsec",
+    },
+    {
+        "title": "Everyone Told Me DNS is a Phonebook. They Lied.",
+        "link": "https://varnith.medium.com/everyone-told-me-dns-is-a-phonebook-they-lied-0ff7a1023248",
+        "summary": "Offensive-security deep dive on DNS from a bug bounty and recon perspective.",
+        "source_detail": "varnith",
+    },
+    {
+        "title": "From Logs to Rootkits: A Complete Linux Forensic Analysis Breakdown",
+        "link": "https://v3n0m.medium.com/from-logs-to-rootkits-a-complete-linux-forensic-analysis-breakdown-48a011d7ce0c",
+        "summary": "Linux forensic workflow that moves from host logs to deeper compromise analysis.",
+        "source_detail": "v3n0m",
+    },
+    {
+        "title": "HackerMD Elite Bug Bounty Recon Toolkit: The Only Tool You Need in 2026",
+        "link": "https://medium.com/@HackerMD/hackermd-elite-bug-bounty-recon-toolkit-the-only-tool-you-need-in-2026-63a8945318f4",
+        "summary": "Recon tooling roundup aimed at modern bug bounty workflows.",
+        "source_detail": "@HackerMD",
+    },
+    {
+        "title": "Wireless Attack with Aircrack-ng: A Complete Guide from A to Z",
+        "link": "https://medium.com/@contact.us1320/wireless-attack-with-aircrack-ng-a-complete-guide-from-a-to-z-17b5a3de94f6",
+        "summary": "Hands-on wireless attack lab guide built around Aircrack-ng.",
+        "source_detail": "@contact.us1320",
     },
 ]
 
@@ -153,8 +224,8 @@ NEWS_FEEDS = [
 ]
 
 SOURCE_PRIORITY = {
-    "HackerOne Hacktivity": 0,
-    "Bugcrowd Disclosure": 1,
+    "Medium": 0,
+    "HackerOne Hacktivity": 1,
     "huntr": 2,
     "Google Project Zero": 3,
     "NVD": 4,
@@ -206,6 +277,13 @@ def truncate_sentence(text: str, limit: int = 240) -> str:
     if matches:
         return clipped[: matches[-1].end()].strip()
     return clipped.rsplit(" ", 1)[0].strip() + "..."
+
+
+def truncate_text(text: str, limit: int = 160) -> str:
+    text = clean_text(text)
+    if not text or len(text) <= limit:
+        return text
+    return text[: limit - 3].rsplit(" ", 1)[0].strip() + "..."
 
 
 def normalize_key(value: str) -> str:
@@ -382,6 +460,83 @@ def fetch_bounty_feed_items(cache: dict) -> list[dict]:
     return items
 
 
+def fetch_medium_bounty_articles(cache: dict) -> list[dict]:
+    log.info("Fetching Medium bug bounty write-ups...")
+    items = []
+    seen = set()
+
+    for config in MEDIUM_BOUNTY_FEEDS:
+        try:
+            feed = parse_feed(config["url"])
+        except Exception as exc:
+            log.warning("Medium feed error (%s): %s", config["name"], exc)
+            continue
+
+        source_count = 0
+        for entry in getattr(feed, "entries", []):
+            title = clean_text(getattr(entry, "title", ""))
+            link = getattr(entry, "link", "").strip()
+            if not title or not link:
+                continue
+
+            published = entry_datetime(entry)
+            if not is_recent(published, days=MEDIUM_RECENT_DAYS):
+                continue
+
+            lowered = title.lower()
+            if lowered in {"home", "about", "archive"}:
+                continue
+
+            key = normalize_key(f"medium {link}")[:140]
+            if key in seen or already_sent(cache, "bounty", key):
+                continue
+
+            items.append(
+                {
+                    "title": title,
+                    "link": link,
+                    "summary": feed_summary(entry, fallback=title),
+                    "source": "Medium",
+                    "source_detail": config["name"],
+                    "published": published,
+                    "priority": 0,
+                    "_key": key,
+                }
+            )
+            seen.add(key)
+            source_count += 1
+            if source_count >= config["limit"]:
+                break
+
+    items.sort(key=lambda item: item["published"].timestamp(), reverse=True)
+    return items
+
+
+def curated_medium_fallback(cache: dict) -> list[dict]:
+    items = []
+    current = now_ist()
+
+    for index, article in enumerate(CURATED_MEDIUM_ARTICLES):
+        key = normalize_key(f"medium {article['link']}")[:140]
+        if already_sent(cache, "bounty", key):
+            continue
+
+        items.append(
+            {
+                "title": article["title"],
+                "link": article["link"],
+                "summary": article["summary"],
+                "source": "Medium",
+                "source_detail": article["source_detail"],
+                "published": current - timedelta(minutes=index),
+                "priority": 0,
+                "_key": key,
+            }
+        )
+
+    return items
+
+
 def fetch_project_zero_disclosures(cache: dict) -> list[dict]:
     log.info("Fetching Google Project Zero disclosures...")
     items = []
@@ -456,6 +611,10 @@ def fetch_nvd_recent_disclosures(cache: dict) -> list[dict]:
             (item.get("value", "") for item in descriptions if item.get("lang") == "en"),
             "",
         )
+        published = parse_iso_datetime(cve.get("published"))
+        if not is_recent(published, days=NVD_RECENT_DAYS):
+            continue
+
         severity, score = score_cvss(cve.get("metrics", {}))
         if severity not in {"Critical", "High"} and (not score or float(score) < 7.0):
             continue
@@ -467,11 +626,11 @@ def fetch_nvd_recent_disclosures(cache: dict) -> list[dict]:
         summary = truncate_sentence(description, 220) or "New high-severity public CVE published in the NVD."
         items.append(
             {
-                "title": f"{cve_id} — {summary[:80]}{'...' if len(summary) > 80 else ''}",
+                "title": cve_id,
                 "link": f"https://nvd.nist.gov/vuln/detail/{cve_id}",
                 "summary": summary,
                 "source": "NVD",
-                "published": parse_iso_datetime(cve.get("published")),
+                "published": published,
                 "severity": severity,
                 "score": score,
                 "_key": key,
@@ -489,6 +648,8 @@ def fetch_nvd_recent_disclosures(cache: dict) -> list[dict]:
 
 def fetch_bug_bounty_reports(cache: dict) -> list[dict]:
     items = []
+    items.extend(fetch_medium_bounty_articles(cache))
+    items.extend(curated_medium_fallback(cache))
     items.extend(fetch_bounty_feed_items(cache))
     items.extend(fetch_project_zero_disclosures(cache))
     items.extend(fetch_nvd_recent_disclosures(cache))
@@ -497,7 +658,7 @@ def fetch_bug_bounty_reports(cache: dict) -> list[dict]:
     seen = set()
     for item in sorted(
         items,
-        key=lambda value: (source_rank(value["source"]), -value["published"].timestamp()),
+        key=lambda value: (value.get("priority", source_rank(value["source"])), -value["published"].timestamp()),
     ):
         key = item["_key"]
         if key in seen:
@@ -614,6 +775,7 @@ def fetch_single_certin_advisory(args: tuple[int, int]) -> dict | None:
                 affected = ", ".join(items[:3])
                 if len(items) > 3:
                     affected += f" +{len(items) - 3} more"
+                affected = truncate_text(affected, 180)
 
         return {
             "code": code,
@@ -735,95 +897,71 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
     today = now_ist()
     today_human = today.strftime("%d %B %Y")
     weekday = today.strftime("%A")
+    generated_at = today.strftime("%I:%M %p IST").lstrip("0")
+    subject = f"SC Newspaper | {today_human}"
 
-    top_story = "Daily Cybersecurity Briefing"
-    for bucket in (bounty, news, certin):
-        if bucket:
-            top_story = bucket[0]["title"]
-            break
+    def item_meta(item: dict) -> str:
+        parts = []
+        if item["source"] == "Medium" and item.get("source_detail"):
+            parts.extend(["Medium", item["source_detail"]])
+        else:
+            parts.append(item["source"])
+        if item.get("severity"):
+            parts.append(item["severity"].upper())
+        if item.get("score"):
+            parts.append(f"CVSS {item['score']}")
+        return " · ".join(parts)
 
-    subject = f"🛡️ {today_human} — {top_story[:68]}{'...' if len(top_story) > 68 else ''}"
-
-    bug_styles = {
-        "Critical": "#b91c1c",
-        "High": "#c2410c",
-        "Medium": "#a16207",
-        "Low": "#15803d",
-    }
-
-    def render_item_cards(items: list[dict], accent: str, minimal: bool = False) -> str:
-        cards = []
+    def render_items(items: list[dict], accent: str) -> str:
+        blocks = []
         for item in items:
-            meta = [item["source"]]
-            if item.get("severity"):
-                meta.append(item["severity"].upper())
-            if item.get("score"):
-                meta.append(f"CVSS {item['score']}")
+            title = html_lib.escape(item["title"])
+            link = html_lib.escape(item["link"], quote=True)
+            meta = html_lib.escape(item_meta(item))
+            summary = html_lib.escape(item["summary"])
 
             affected = ""
             if item.get("affected"):
                 affected = (
-                    f'<div style="font-size:12px;color:#6b7280;margin:0 0 8px;">'
-                    f"<strong>Affects:</strong> {item['affected']}</div>"
+                    f'<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:0 0 8px;">'
+                    f'<strong style="color:#fff;">Affects:</strong> {html_lib.escape(item["affected"])}</div>'
                 )
 
-            cards.append(
+            blocks.append(
                 f"""
-                <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;
-                            padding:16px 18px;margin-bottom:12px;">
-                  <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;
-                              text-transform:uppercase;color:{accent};margin-bottom:8px;">
-                    {' · '.join(meta)}
+                <div style="border-top:1px solid rgba(255,255,255,0.08);padding:18px 0 2px;">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;
+                              text-transform:uppercase;color:{accent};margin-bottom:10px;">
+                    {meta}
                   </div>
-                  <div style="font-size:16px;font-weight:700;line-height:1.45;margin-bottom:8px;">
-                    <a href="{item['link']}" style="color:#111827;text-decoration:none;">{item['title']}</a>
+                  <div style="font-size:24px;line-height:1.15;margin:0 0 10px;
+                              font-family:Georgia,'Times New Roman',serif;">
+                    <a href="{link}" style="color:#ffffff;text-decoration:none;">{title}</a>
                   </div>
                   {affected}
-                  <p style="margin:0;font-size:14px;line-height:1.75;color:#374151;">
-                    {item['summary']}
+                  <p style="margin:0 0 14px;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.72);">
+                    {summary}
                   </p>
                 </div>
                 """
             )
-
-        if not cards and minimal:
-            return ""
-        return "".join(cards)
-
-    cert_cards = []
-    for item in certin:
-        accent = bug_styles.get(item.get("severity", "High"), "#c2410c")
-        cert_cards.append(
-            f"""
-            <div style="background:#ffffff;border:1px solid #e5e7eb;border-left:4px solid {accent};
-                        border-radius:0 12px 12px 0;padding:16px 18px;margin-bottom:12px;">
-              <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;
-                          text-transform:uppercase;color:{accent};margin-bottom:8px;">
-                CERT-In · {item.get('severity', 'High').upper()}
-              </div>
-              <div style="font-size:16px;font-weight:700;line-height:1.45;margin-bottom:8px;">
-                <a href="{item['link']}" style="color:#111827;text-decoration:none;">{item['code']}</a>
-              </div>
-              {f'<div style="font-size:12px;color:#6b7280;margin:0 0 8px;"><strong>Affects:</strong> {item["affected"]}</div>' if item.get('affected') else ''}
-              <p style="margin:0;font-size:14px;line-height:1.75;color:#374151;">
-                {item['summary']}
-              </p>
-            </div>
-            """
-        )
+        return "".join(blocks)
 
     sections = []
     if bounty:
         sections.append(
             f"""
-            <div style="background:#f8fafc;border:1px solid #dbeafe;border-radius:16px;padding:22px;margin-bottom:18px;">
-              <div style="font-size:20px;font-weight:800;color:#1d4ed8;margin-bottom:4px;">
-                🐛 Bug Bounty Reports &amp; Public Disclosures
+            <div style="border:1px solid rgba(255,255,255,0.08);background:#050505;padding:22px 24px 8px;margin-top:18px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">
+                Bug Bounty
               </div>
-              <div style="font-size:12px;color:#64748b;margin-bottom:16px;">
-                HackerOne Hacktivity · Bugcrowd · huntr · Google Project Zero · NVD
+              <div style="font-size:34px;line-height:1;margin:0 0 8px;color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
+                Reports &amp; Write-ups
               </div>
-              {render_item_cards(bounty, "#1d4ed8")}
+              <div style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.58);margin-bottom:2px;">
+                Latest public bug bounty research, recon notes, exploit write-ups, and disclosures worth opening.
+              </div>
+              {render_items(bounty, "#e8212b")}
             </div>
             """
         )
@@ -831,29 +969,35 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
     if news:
         sections.append(
             f"""
-            <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:16px;padding:22px;margin-bottom:18px;">
-              <div style="font-size:20px;font-weight:800;color:#c2410c;margin-bottom:4px;">
-                🔥 Cybersecurity News
+            <div style="border:1px solid rgba(255,255,255,0.08);background:#050505;padding:22px 24px 8px;margin-top:18px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">
+                Cybersecurity News
               </div>
-              <div style="font-size:12px;color:#7c2d12;margin-bottom:16px;">
-                Minimal roundup of the stories worth opening today
+              <div style="font-size:34px;line-height:1;margin:0 0 8px;color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
+                News That Matters
               </div>
-              {render_item_cards(news, "#c2410c")}
+              <div style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.58);margin-bottom:2px;">
+                Minimal roundup of the security stories worth reading today.
+              </div>
+              {render_items(news, "#f5f5f5")}
             </div>
             """
         )
 
-    if cert_cards:
+    if certin:
         sections.append(
             f"""
-            <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:16px;padding:22px;">
-              <div style="font-size:20px;font-weight:800;color:#b91c1c;margin-bottom:4px;">
-                🚨 CERT-In Alerts
+            <div style="border:1px solid rgba(255,255,255,0.08);background:#050505;padding:22px 24px 8px;margin-top:18px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">
+                CERT-In
               </div>
-              <div style="font-size:12px;color:#7f1d1d;margin-bottom:16px;">
-                Official Indian Computer Emergency Response Team advisories
+              <div style="font-size:34px;line-height:1;margin:0 0 8px;color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
+                Official Alerts
               </div>
-              {''.join(cert_cards)}
+              <div style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.58);margin-bottom:2px;">
+                Official Indian Computer Emergency Response Team advisories.
+              </div>
+              {render_items(certin, "#e8212b")}
             </div>
             """
         )
@@ -861,8 +1005,8 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
     if not sections:
         sections.append(
             """
-            <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;padding:22px;">
-              <p style="margin:0;font-size:14px;line-height:1.75;color:#374151;">
+            <div style="border:1px solid rgba(255,255,255,0.08);background:#050505;padding:22px 24px;margin-top:18px;">
+              <p style="margin:0;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.72);">
                 No fresh items were selected today across the configured sources.
               </p>
             </div>
@@ -875,32 +1019,36 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
-<body style="margin:0;padding:0;background:#edf2f7;font-family:Segoe UI,Helvetica,Arial,sans-serif;">
-  <div style="max-width:760px;margin:0 auto;padding:20px 12px;">
-    <div style="background:#0f172a;border-radius:18px 18px 0 0;padding:28px 30px;color:#ffffff;">
-      <div style="font-size:28px;font-weight:800;letter-spacing:-0.02em;">🛡️ SC Newspaper</div>
-      <div style="font-size:13px;color:#cbd5e1;margin-top:6px;">
-        {weekday}, {today_human} · Bug bounty first, then news, then CERT-In
+<body style="margin:0;padding:0;background:#000000;font-family:'Segoe UI',Arial,sans-serif;color:#ffffff;">
+  <div style="max-width:760px;margin:0 auto;padding:28px 16px 34px;">
+    <div style="border:1px solid rgba(255,255,255,0.08);background:#000000;padding:30px 28px 26px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:#777777;margin-bottom:14px;">
+        Security Circuit
       </div>
-      <div style="font-size:12px;color:#94a3b8;margin-top:14px;">
-        {len(bounty)} disclosures · {len(news)} news items · {len(certin)} CERT-In alerts
+      <div style="font-size:58px;line-height:0.92;margin:0;color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
+        SC Newspaper
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.12);margin:22px 0 18px;"></div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#8b8b8b;">
+        {weekday} · {today_human}
+      </div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.62);margin-top:14px;line-height:1.7;">
+        {len(bounty)} bug bounty items · {len(news)} news items · {len(certin)} CERT-In alerts
       </div>
     </div>
 
-    <div style="background:#f8fafc;border-radius:0 0 18px 18px;padding:22px 18px 18px;">
-      {''.join(sections)}
-    </div>
+    {''.join(sections)}
 
-    <div style="padding:16px 6px 0;text-align:center;">
-      <p style="margin:0 0 4px;font-size:12px;color:#64748b;">
-        Auto-generated on {today_human} at 10:00 AM IST
+    <div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:22px;padding:18px 2px 0;">
+      <p style="margin:0 0 6px;font-size:12px;color:#8b8b8b;">
+        Auto-generated on {today_human} at {generated_at}
       </p>
-      <p style="margin:0;font-size:11px;color:#94a3b8;">
-        Sources include public disclosures, cybersecurity RSS feeds, CERT-In, Project Zero, and NVD.
+      <p style="margin:0 0 8px;font-size:11px;color:#5f5f5f;line-height:1.7;">
+        Sources include Medium write-ups, public disclosure feeds, cybersecurity RSS feeds, CERT-In, Project Zero, and NVD.
       </p>
-      <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;">
+      <p style="margin:0;font-size:11px;color:#5f5f5f;line-height:1.7;">
         You are receiving this because you subscribed to SC Newspaper.
-        <a href="__UNSUBSCRIBE_URL__" style="color:#cbd5e1;">Unsubscribe instantly</a>.
+        <a href="__UNSUBSCRIBE_URL__" style="color:#d0d0d0;">Unsubscribe instantly</a>.
       </p>
     </div>
   </div>
