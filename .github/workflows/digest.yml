@@ -1,0 +1,50 @@
+name: Daily Cyber Digest
+
+on:
+  schedule:
+    - cron: "20 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: seen_cache.json
+          key: digest-seen-cache
+          restore-keys: digest-seen-cache
+        continue-on-error: true
+
+      - name: Debug secrets
+        run: |
+          echo "RESEND_KEY present: ${{ secrets.RESEND_API_KEY != '' }}"
+          echo "FROM_EMAIL present: ${{ secrets.FROM_EMAIL != '' }}"
+          echo "EMAIL_TO present: ${{ secrets.EMAIL_TO != '' }}"
+          echo "RESEND_AUDIENCE_ID present: ${{ secrets.RESEND_AUDIENCE_ID != '' }}"
+
+      - name: Run digest
+        run: python digest.py
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
+
+      - name: Save cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: seen_cache.json
+          key: digest-seen-cache-${{ github.run_id }}
+        continue-on-error: true
