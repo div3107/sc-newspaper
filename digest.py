@@ -1032,9 +1032,6 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
       <div style="font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#8b8b8b;">
         {weekday} · {today_human}
       </div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.62);margin-top:14px;line-height:1.7;">
-        {len(bounty)} bug bounty items · {len(news)} news items · {len(certin)} CERT-In alerts
-      </div>
     </div>
 
     {''.join(sections)}
