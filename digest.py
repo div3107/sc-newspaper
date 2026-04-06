@@ -1,5 +1,5 @@
 """
-SC Newspaper Digest
+Security Circuit Newspaper Digest
 
 Priority order:
 1. Bug bounty reports and public disclosures
@@ -898,7 +898,7 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
     today_human = today.strftime("%d %B %Y")
     weekday = today.strftime("%A")
     generated_at = today.strftime("%I:%M %p IST").lstrip("0")
-    subject = f"SC Newspaper | {today_human}"
+    subject = f"Security Circuit Newspaper | {today_human}"
 
     def item_meta(item: dict) -> str:
         parts = []
@@ -1026,7 +1026,7 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
         Security Circuit
       </div>
       <div style="font-size:58px;line-height:0.92;margin:0;color:#ffffff;font-family:Georgia,'Times New Roman',serif;">
-        SC Newspaper
+        Security Circuit Newspaper
       </div>
       <div style="height:1px;background:rgba(255,255,255,0.12);margin:22px 0 18px;"></div>
       <div style="font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#8b8b8b;">
@@ -1044,7 +1044,7 @@ def format_email(bounty: list[dict], news: list[dict], certin: list[dict]) -> tu
         Sources include Medium write-ups, public disclosure feeds, cybersecurity RSS feeds, CERT-In, Project Zero, and NVD.
       </p>
       <p style="margin:0;font-size:11px;color:#5f5f5f;line-height:1.7;">
-        You are receiving this because you subscribed to SC Newspaper.
+        You are receiving this because you subscribed to Security Circuit Newspaper.
         <a href="__UNSUBSCRIBE_URL__" style="color:#d0d0d0;">Unsubscribe instantly</a>.
       </p>
     </div>
@@ -1108,7 +1108,7 @@ def send_email(html: str, subject: str, recipients: list[str]) -> bool:
 # MAIN
 # =============================================================================
 if __name__ == "__main__":
-    log.info("=== SC Newspaper Digest ===")
+    log.info("=== Security Circuit Newspaper Digest ===")
     validate_config()
 
     cache = load_cache()
