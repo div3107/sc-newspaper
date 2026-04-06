@@ -44,6 +44,14 @@ const readErrorMessage = async (response, fallback) => {
   }
 };
 
+const readJson = async (response, fallback = {}) => {
+  try {
+    return await response.json();
+  } catch {
+    return fallback;
+  }
+};
+
 const isAllowedOrigin = (origin) => {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
@@ -56,7 +64,44 @@ const isAllowedOrigin = (origin) => {
   }
 };
 
-const WELCOME_HTML = (email) => `<!DOCTYPE html>
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const htmlResponse = (html, init = {}) =>
+  new Response(html, {
+    ...init,
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8',
+      ...(init.headers || {}),
+    },
+  });
+
+const STATUS_PAGE = (title, body) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} — SC Newspaper</title>
+</head>
+<body style="margin:0;background:#000;color:#fff;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:640px;margin:0 auto;padding:80px 24px;text-align:center;">
+    <p style="font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#777;margin:0 0 18px;">
+      Security Circuit
+    </p>
+    <h1 style="font-size:40px;line-height:1.05;margin:0 0 18px;">${title}</h1>
+    <p style="font-size:16px;line-height:1.8;color:rgba(255,255,255,0.7);margin:0 auto 28px;max-width:540px;">
+      ${body}
+    </p>
+    <a href="https://news.securitycircuit.in"
+       style="display:inline-block;border:1px solid #fff;padding:12px 24px;
+              font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+              color:#fff;text-decoration:none;">
+      Back to Newspaper
+    </a>
+  </div>
+</body>
+</html>`;
+
+const WELCOME_HTML = (email, unsubscribeUrl) => `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#000;font-family:'Segoe UI',Arial,sans-serif;">
@@ -100,11 +145,72 @@ const WELCOME_HTML = (email) => `<!DOCTYPE html>
 
   <p style="font-size:11px;color:#444;margin-top:40px;line-height:1.6;">
     You subscribed with ${email}.<br>
-    To unsubscribe, reply with "unsubscribe" or click the link in any edition.
+    If this was not you or you want to leave, <a href="${unsubscribeUrl}" style="color:#aaa;">unsubscribe here</a>.
   </p>
 </div>
 </body>
 </html>`;
+
+const unsubscribeContact = async (email, env) => {
+  const resendHeaders = {
+    'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+    'Content-Type': 'application/json',
+    'User-Agent': RESEND_USER_AGENT,
+  };
+
+  const contactRes = await fetch(`${RESEND_API_BASE}/contacts/${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers: resendHeaders,
+  });
+
+  if (contactRes.status === 404) {
+    return { ok: true, alreadyUnsubscribed: true };
+  }
+
+  if (!contactRes.ok) {
+    return {
+      ok: false,
+      error: await readErrorMessage(contactRes, 'Failed to retrieve subscriber'),
+    };
+  }
+
+  const contact = await readJson(contactRes);
+  if (contact.unsubscribed) {
+    return { ok: true, alreadyUnsubscribed: true };
+  }
+
+  const updateContactRes = await fetch(`${RESEND_API_BASE}/contacts/${encodeURIComponent(email)}`, {
+    method: 'PATCH',
+    headers: resendHeaders,
+    body: JSON.stringify({
+      unsubscribed: true,
+    }),
+  });
+
+  if (!updateContactRes.ok) {
+    return {
+      ok: false,
+      error: await readErrorMessage(updateContactRes, 'Failed to unsubscribe'),
+    };
+  }
+
+  const removeSegmentRes = await fetch(
+    `${RESEND_API_BASE}/contacts/${encodeURIComponent(email)}/segments/${env.RESEND_AUDIENCE_ID}`,
+    {
+      method: 'DELETE',
+      headers: resendHeaders,
+    }
+  );
+
+  if (!removeSegmentRes.ok && removeSegmentRes.status !== 404) {
+    return {
+      ok: false,
+      error: await readErrorMessage(removeSegmentRes, 'Failed to remove subscriber from segment'),
+    };
+  }
+
+  return { ok: true, alreadyUnsubscribed: false };
+};
 
 export default {
   async fetch(request, env) {
@@ -129,12 +235,52 @@ export default {
       });
     }
 
+    if (request.method === 'GET' && url.pathname === '/unsubscribe') {
+      const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+
+      if (!isValidEmail(email)) {
+        return htmlResponse(
+          STATUS_PAGE('Invalid Unsubscribe Link', 'This unsubscribe link is invalid or incomplete.'),
+          { status: 400 }
+        );
+      }
+
+      try {
+        const result = await unsubscribeContact(email, env);
+        if (!result.ok) {
+          console.error('Unsubscribe error:', result.error);
+          return htmlResponse(
+            STATUS_PAGE('Unsubscribe Failed', result.error || 'We could not unsubscribe this address right now.'),
+            { status: 500 }
+          );
+        }
+
+        if (result.alreadyUnsubscribed) {
+          return htmlResponse(
+            STATUS_PAGE('Already Unsubscribed', `${email} is already unsubscribed from SC Newspaper.`),
+            { status: 200 }
+          );
+        }
+
+        return htmlResponse(
+          STATUS_PAGE('You Are Unsubscribed', `${email} will no longer receive SC Newspaper emails.`),
+          { status: 200 }
+        );
+      } catch (err) {
+        console.error('Worker unsubscribe error:', err);
+        return htmlResponse(
+          STATUS_PAGE('Unsubscribe Failed', 'We could not process your unsubscribe request right now.'),
+          { status: 500 }
+        );
+      }
+    }
+
     if (request.method === 'POST' && url.pathname === '/subscribe') {
       try {
         const body = await request.json();
         const email = (body.email || '').trim().toLowerCase();
 
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (!isValidEmail(email)) {
           return jsonResponse({ error: 'Invalid email address' }, {
             status: 400,
             headers: corsHeaders,
@@ -158,6 +304,54 @@ export default {
         });
 
         if (createContactRes.status === 409) {
+          const contactRes = await fetch(
+            `${RESEND_API_BASE}/contacts/${encodeURIComponent(email)}`,
+            {
+              method: 'GET',
+              headers: resendHeaders,
+            }
+          );
+
+          if (!contactRes.ok) {
+            const err = await readErrorMessage(contactRes, 'Failed to retrieve existing subscriber');
+            console.error('Resend contact lookup error:', err);
+            return jsonResponse({ error: err }, {
+              status: 500,
+              headers: corsHeaders,
+            });
+          }
+
+          const contact = await readJson(contactRes);
+
+          const segmentsRes = await fetch(
+            `${RESEND_API_BASE}/contacts/${encodeURIComponent(email)}/segments`,
+            {
+              method: 'GET',
+              headers: resendHeaders,
+            }
+          );
+
+          if (!segmentsRes.ok) {
+            const err = await readErrorMessage(segmentsRes, 'Failed to retrieve subscriber segments');
+            console.error('Resend contact segments error:', err);
+            return jsonResponse({ error: err }, {
+              status: 500,
+              headers: corsHeaders,
+            });
+          }
+
+          const segmentsPayload = await readJson(segmentsRes, { data: [] });
+          const alreadyInSegment = (segmentsPayload.data || []).some(
+            (segment) => segment.id === env.RESEND_AUDIENCE_ID
+          );
+
+          if (alreadyInSegment && !contact.unsubscribed) {
+            return jsonResponse({ success: true, alreadySubscribed: true, email }, {
+              status: 200,
+              headers: corsHeaders,
+            });
+          }
+
           const updateContactRes = await fetch(`${RESEND_API_BASE}/contacts/${encodeURIComponent(email)}`, {
             method: 'PATCH',
             headers: resendHeaders,
@@ -200,6 +394,7 @@ export default {
           });
         }
 
+        const unsubscribeUrl = `${url.origin}/unsubscribe?email=${encodeURIComponent(email)}`;
         const welcomeEmailRes = await fetch(`${RESEND_API_BASE}/emails`, {
           method: 'POST',
           headers: resendHeaders,
@@ -207,7 +402,7 @@ export default {
             from: env.FROM_EMAIL,
             to: [email],
             subject: "🛡️ Welcome to SC Newspaper — You're subscribed",
-            html: WELCOME_HTML(email),
+            html: WELCOME_HTML(email, unsubscribeUrl),
           }),
         });
 
