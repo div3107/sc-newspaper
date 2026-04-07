@@ -1,13 +1,16 @@
-name: Daily Cyber Digest
+name: Security Circuit Newspaper
 
 on:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "0 4 * * *"   # 9:30 AM IST (UTC+5:30) = 04:00 UTC
   workflow_dispatch:
 
 jobs:
   run-digest:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,19 +31,18 @@ jobs:
 
       - name: Debug secrets
         run: |
-          echo "RESEND_KEY present: ${{ secrets.RESEND_API_KEY != '' }}"
-          echo "FROM_EMAIL present: ${{ secrets.FROM_EMAIL != '' }}"
-          echo "EMAIL_TO present: ${{ secrets.EMAIL_TO != '' }}"
-          echo "RESEND_AUDIENCE_ID present: ${{ secrets.RESEND_AUDIENCE_ID != '' }}"
-          echo "UNSUBSCRIBE_BASE_URL present: ${{ vars.UNSUBSCRIBE_BASE_URL != '' }}"
+          echo "RESEND_API_KEY set: ${{ secrets.RESEND_API_KEY != '' }}"
+          echo "FROM_EMAIL set:     ${{ secrets.FROM_EMAIL != '' }}"
+          echo "EMAIL_TO set:       ${{ secrets.EMAIL_TO != '' }}"
+          echo "RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID != '' }}"
 
       - name: Run digest
         run: python digest.py
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
+          RESEND_API_KEY:       ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL:           ${{ secrets.FROM_EMAIL }}
+          EMAIL_TO:             ${{ secrets.EMAIL_TO }}
+          RESEND_AUDIENCE_ID:   ${{ secrets.RESEND_AUDIENCE_ID }}
           UNSUBSCRIBE_BASE_URL: ${{ vars.UNSUBSCRIBE_BASE_URL }}
 
       - name: Save cache
